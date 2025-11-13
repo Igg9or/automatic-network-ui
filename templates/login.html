@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card login-card">
+  <h1>Подключение к устройству</h1>
+  <p class="muted">Мок-аутентификация: введите любой IP, логин/пароль. Enable — опционально.</p>
+  <form id="loginForm">
+    <label>IP-адрес
+      <input type="text" name="ip" placeholder="10.0.0.1" required />
+    </label>
+    <div class="grid-2">
+      <label>Логин
+        <input type="text" name="username" placeholder="admin" required />
+      </label>
+      <label>Пароль
+        <input type="password" name="password" placeholder="••••••••" required />
+      </label>
+    </div>
+    <label>Enable пароль (опционально)
+      <input type="password" name="enable" placeholder="••••••••" />
+    </label>
+    <button class="btn btn-primary" type="submit">Войти</button>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const payload = Object.fromEntries(fd.entries());
+  const res = await fetch("/api/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if (data.ok) {
+    window.location = "/";
+  } else {
+    alert(data.error || "Ошибка входа");
+  }
+});
+</script>
+{% endblock %}

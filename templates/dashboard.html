@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="toolbar card">
+  <div class="toolbar-left">
+    <h1>Топология сети</h1>
+    <p class="muted">Cisco / Huawei / Eltex (мок). Перетаскивайте узлы, кликайте для деталей.</p>
+  </div>
+  <div class="toolbar-right">
+    <label>Фильтр типа
+      <select id="typeFilter">
+        <option value="">Все</option>
+        <option value="router">Маршрутизатор</option>
+        <option value="switch">Коммутатор</option>
+        <option value="host">Хост</option>
+      </select>
+    </label>
+    <label>Поиск
+      <input id="searchInput" type="search" placeholder="IP, hostname..." />
+    </label>
+  </div>
+</section>
+
+<section class="card">
+  <div id="topology" class="topology"></div>
+</section>
+
+<section class="card device-list">
+  <h2>Устройства</h2>
+  <div id="deviceTable"></div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='topology.js') }}"></script>
+<script>
+(async function(){
+  const resp = await fetch("/api/topology");
+  if (!resp.ok) {
+    if (resp.status === 401) { window.location="/login"; return; }
+    alert("Не удалось загрузить топологию");
+    return;
+  }
+  const {devices, links} = (await resp.json());
+  window.renderTopology("topology", devices, links, {
+    onClick: (node) => window.location = "/device/" + node.id
+  });
+  renderDeviceTable(devices);
+  // Filters
+  document.getElementById("typeFilter").addEventListener("change", (e) => {
+    const type = e.target.value;
+    const q = document.getElementById("searchInput").value.trim().toLowerCase();
+    const filtered = devices.filter(d => {
+      const okType = !type || d.type === type;
+      const okQ = !q || (String(d.management_ip).includes(q) || String(d.hostname).toLowerCase().includes(q));
+      return okType && okQ;
+    });
+    renderDeviceTable(filtered);
+    window.updateTopologyFilter(type, q);
+  });
+  document.getElementById("searchInput").addEventListener("input", (e) => {
+    document.getElementById("typeFilter").dispatchEvent(new Event("change"));
+  });
+})();
+
+function renderDeviceTable(devices){
+  const el = document.getElementById("deviceTable");
+  el.innerHTML = "";
+  const table = document.createElement("table");
+  table.className = "table";
+  table.innerHTML = `<thead><tr>
+    <th>Hostname</th><th>IP</th><th>Вендор</th><th>Модель</th><th>Uptime</th><th>Темп.</th><th></th>
+  </tr></thead>`;
+  const tbody = document.createElement("tbody");
+  for (const d of devices){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${d.hostname}</td>
+      <td>${d.management_ip}</td>
+      <td>${d.vendor}</td>
+      <td>${d.model || "-"}</td>
+      <td>${d.uptime || "-"}</td>
+      <td>${d.temperature || "-"}</td>
+      <td><a class="btn btn-ghost" href="/device/${d.id}">Открыть</a></td>`;
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  el.appendChild(table);
+}
+</script>
+{% endblock %}

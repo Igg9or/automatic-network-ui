@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ title or "Network Manager (Mock)" }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">NetOps Studio — Mock</div>
+    <nav>
+      <a href="{{ url_for('index') }}">Топология</a>
+      {% if session.get('user') %}
+      <form id="logoutForm" action="#" onsubmit="return false;">
+        <button id="logoutBtn" class="btn btn-ghost">Выйти</button>
+      </form>
+      {% endif %}
+    </nav>
+  </header>
+  <main class="app-main">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="app-footer">
+    <div>Тестовая среда. Все данные лежат в <a href="{{ url_for('serve_devices_txt') }}">devices.txt</a></div>
+  </footer>
+  <script>
+  window.API_BASE = "";
+  </script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

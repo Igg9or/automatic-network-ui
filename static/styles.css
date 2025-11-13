@@ -1,0 +1,123 @@
+*{box-sizing:border-box}html,body{margin:0;padding:0;font-family:Inter,-apple-system,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#0b1020;color:#e7ecff}
+a{color:#9bb1ff;text-decoration:none}a:hover{text-decoration:underline}
+.app-header{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(12,18,40,.8);backdrop-filter:blur(6px);border-bottom:1px solid #1f2a4d}
+.brand{font-weight:700;letter-spacing:.5px}
+nav{display:flex;gap:12px;align-items:center}
+.btn{border:1px solid #3a4a7a;background:#1a2454;color:#e7ecff;padding:8px 12px;border-radius:12px;cursor:pointer;transition:all .15s} .btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(45,60,120,.25)}
+.btn-primary{background:#4860ff;border-color:#5e72ff}
+.btn-ghost{background:transparent;border-color:#2b355b}
+.app-main{max-width:1100px;margin:24px auto;padding:0 16px}
+.app-footer{opacity:.7;font-size:13px;padding:16px;text-align:center}
+.card{background:#101633;border:1px solid #1f2a4d;border-radius:16px;padding:16px;margin-bottom:16px;box-shadow:0 10px 30px rgba(15,20,45,.2)}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.toolbar .muted{opacity:.7}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;margin:8px 0;font-size:14px;opacity:.9}
+input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #2b355b;background:#0e1430;color:#e7ecff}
+.topology {
+  height: 800px;
+  width: 100%;
+  border: 1px solid #1f2a4d;
+  border-radius: 16px;
+  background: radial-gradient(1200px 700px at 60% -30%, #1a2140 0%, #0b0f1f 60%);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  position: relative;
+  overflow: hidden;
+}
+.table{width:100%;border-collapse:separate;border-spacing:0 6px}
+.table thead th{font-size:12px;opacity:.7;text-align:left;padding:6px 8px}
+.table tbody td{background:#0c132e;padding:10px 12px;border-top:1px solid #1c274d;border-bottom:1px solid #1c274d}
+.table tbody tr td:first-child{border-left:1px solid #1c274d;border-top-left-radius:10px;border-bottom-left-radius:10px}
+.table tbody tr td:last-child{border-right:1px solid #1c274d;border-top-right-radius:10px;border-bottom-right-radius:10px}
+.device-list h2{margin:0 0 8px 0}
+.login-card{max-width:560px;margin:40px auto}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tab{padding:8px 12px;border-radius:10px;background:#0e1430;border:1px solid #2b355b;cursor:pointer}
+.tab.active{background:#1a2454;border-color:#4962ff}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kv > div{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#0c132e;border:1px solid #1c274d;border-radius:10px;padding:10px}
+.kv span{opacity:.7}
+.actions{margin-top:10px;display:flex;gap:10px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:end;margin-bottom:8px}
+.node{position:absolute;display:flex;align-items:center;gap:6px;background:#0c132e;border:1px solid #1c274d;border-radius:12px;padding:6px 10px;box-shadow:0 6px 20px rgba(10,15,35,.2)}
+.node .dot{width:8px;height:8px;border-radius:50%}
+.node.router .dot{background:#6ecbff}
+.node.switch .dot{background:#86ffb6}
+.node.host .dot{background:#ffd37a}
+.link{position:absolute;border-top:2px solid #2b355b}
+.muted{opacity:.75}
+/* --- Добавлено: стили для новых линков и подписей --- */
+.link{position:absolute;border-top:2px solid #2b355b;pointer-events:none}
+.link.up{border-top-color:#2cdd8a}
+.link.down{border-top-color:#ff6b6b;border-top-style:dashed;opacity:0.9}
+.link-label{
+  position:absolute;
+  font-size:11px;
+  opacity:.65;
+  pointer-events:none;
+  background:#0c132e;
+  border:1px solid #1c274d;
+  border-radius:6px;
+  padding:1px 4px;
+}
+/* --- Современный вид узлов и линков --- */
+.node {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: transparent;
+  color: #e8ecff;
+  text-align: center;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.node .dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-bottom: 4px;
+  box-shadow: 0 0 10px rgba(0,0,0,.5);
+}
+
+.node.router .dot { background:#6ea8fe; }
+.node.switch .dot { background:#8b9cf9; }
+.node.host   .dot { background:#79e4a3; }
+.node.ap     .dot { background:#ffc868; }
+
+.link {
+  position: absolute;
+  border-top: 2px solid #2b355b;
+  pointer-events: none;
+  opacity: .9;
+}
+.link.up   { border-top-color:#2d6a4f; }
+.link.down { border-top-color:#8a3a41; border-top-style:dashed; }
+
+.link-label {
+  position: absolute;
+  font-size: 11px;
+  color: #a7b0d6;
+  pointer-events: none;
+  background: #0c132e;
+  border: 1px solid #1c274d;
+  border-radius: 6px;
+  padding: 1px 4px;
+}
+ svg { width: 100%; height: 100%; display: block; }
+.node circle { stroke-width: 2px; cursor: grab; }
+.node text { font-size: 12px; text-anchor: middle; fill: #dfe6ff; pointer-events: none; }
+.edge-label { font-size: 11px; fill: #a7b0d6; paint-order: stroke; stroke: #0b0f1f; stroke-width: 3px; }
+.tooltip {
+  position: absolute; pointer-events: none;
+  background: #0b1024; border: 1px solid #26306a;
+  padding: 8px 10px; border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  font-size: 13px; display: none;
+  color: #e8ecff;
+}
+.tooltip .ttl { font-weight: 700; margin-bottom: 4px; }
+.tooltip .row { display: grid; grid-template-columns: 80px 1fr; gap: 6px; color: #9aa4c7; }

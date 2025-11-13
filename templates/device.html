@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <div class="tabs">
+    <button class="tab active" data-tab="overview">Обзор</button>
+    <button class="tab" data-tab="interfaces">Интерфейсы</button>
+    <button class="tab" data-tab="routing">Маршрутизация</button>
+    <button class="tab" data-tab="vlans">VLAN</button>
+    <button class="tab" data-tab="arp">ARP</button>
+    <button class="tab" data-tab="logs">Логи</button>
+  </div>
+
+  <div id="panel-overview" class="tab-panel active">
+    <div id="overview"></div>
+  </div>
+  <div id="panel-interfaces" class="tab-panel">
+    <div id="interfaces"></div>
+    <div class="actions">
+      <button id="saveInterfaces" class="btn btn-primary">Сохранить интерфейсы</button>
+    </div>
+  </div>
+  <div id="panel-routing" class="tab-panel">
+    <div id="routing"></div>
+  </div>
+  <div id="panel-vlans" class="tab-panel">
+    <div id="vlans"></div>
+    <div class="actions">
+      <button id="saveVlans" class="btn btn-primary">Сохранить VLAN</button>
+    </div>
+  </div>
+  <div id="panel-arp" class="tab-panel">
+    <div id="arp"></div>
+  </div>
+  <div id="panel-logs" class="tab-panel">
+    <div class="filters">
+      <label>Уровень
+        <select id="logLevel">
+          <option value="">Все</option>
+          <option value="DEBUG">DEBUG</option>
+          <option value="INFO">INFO</option>
+          <option value="WARN">WARN</option>
+          <option value="ERROR">ERROR</option>
+          <option value="CRITICAL">CRITICAL</option>
+        </select>
+      </label>
+      <label>С
+        <input type="datetime-local" id="since" />
+      </label>
+      <label>По
+        <input type="datetime-local" id="until" />
+      </label>
+      <button id="applyLogs" class="btn btn-ghost">Фильтровать</button>
+    </div>
+    <div id="logs"></div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const DEVICE_ID = "{{ device_id }}";
+// Tabs
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("panel-"+btn.dataset.tab).classList.add("active");
+  });
+});
+
+async function loadDevice() {
+  const res = await fetch(`/api/device/${DEVICE_ID}`);
+  if (!res.ok) { alert("Не найдено устройство"); return; }
+  const {device} = await res.json();
+  renderOverview(device);
+  renderInterfaces(device.interfaces || []);
+  renderRouting(device.routing || []);
+  renderVlans(device.vlans || []);
+  renderArp(device.arp || []);
+  await loadLogs();
+}
+
+function renderOverview(d){
+  const el = document.getElementById("overview");
+  el.innerHTML = `
+    <div class="kv">
+      <div><span>Hostname</span><b>${d.hostname}</b></div>
+      <div><span>IP</span><b>${d.management_ip}</b></div>
+      <div><span>Вендор</span><b>${d.vendor}</b></div>
+      <div><span>Модель</span><b>${d.model||"-"}</b></div>
+      <div><span>Uptime</span><b>${d.uptime||"-"}</b></div>
+      <div><span>Температура</span><b>${d.temperature||"-"}</b></div>
+      <div><span>Локация</span><input id="editLocation" value="${d.location||""}" /></div>
+      <div><span>Заметки</span><input id="editNotes" value="${d.notes||""}" /></div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" onclick="saveMeta()">Сохранить</button>
+    </div>
+  `;
+}
+
+function renderInterfaces(ifaces){
+  const el = document.getElementById("interfaces");
+  el.innerHTML = "";
+  const table = document.createElement("table");
+  table.className = "table";
+  table.innerHTML = `<thead><tr>
+    <th>Имя</th><th>IP/Mask</th><th>VLAN</th><th>Скорость</th><th>Описание</th><th>Админ</th>
+  </tr></thead>`;
+  const tbody = document.createElement("tbody");
+  for (const it of ifaces){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td contenteditable="true" data-key="name">${it.name||""}</td>
+      <td contenteditable="true" data-key="ip">${it.ip||""}</td>
+      <td contenteditable="true" data-key="vlan">${it.vlan||""}</td>
+      <td contenteditable="true" data-key="speed">${it.speed||""}</td>
+      <td contenteditable="true" data-key="desc">${it.desc||""}</td>
+      <td>
+        <select data-key="admin_status">
+          <option ${it.admin_status==="up"?"selected":""} value="up">up</option>
+          <option ${it.admin_status==="down"?"selected":""} value="down">down</option>
+        </select>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  el.appendChild(table);
+  document.getElementById("saveInterfaces").onclick = async () => {
+    const updated = [...tbody.querySelectorAll("tr")].map(tr => {
+      const obj = {};
+      tr.querySelectorAll("[contenteditable], select").forEach(cell => {
+        const key = cell.dataset.key;
+        obj[key] = cell.tagName === "SELECT" ? cell.value : cell.innerText.trim();
+      });
+      return obj;
+    });
+    const res = await fetch(`/api/device/${DEVICE_ID}/interfaces`,{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({interfaces: updated})
+    });
+    const data = await res.json();
+    if (data.ok) alert("Интерфейсы сохранены");
+    else alert(data.error || "Ошибка");
+  };
+}
+
+function renderRouting(routes){
+  const el = document.getElementById("routing");
+  const table = document.createElement("table");
+  table.className = "table";
+  table.innerHTML = `<thead><tr><th>Сеть</th><th>Next Hop</th><th>Интерфейс</th><th>Метрика</th><th>Протокол</th></tr></thead>`;
+  const tbody = document.createElement("tbody");
+  for (const r of routes){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${r.prefix}</td><td>${r.nexthop||"-"}</td><td>${r.iface||"-"}</td><td>${r.metric||"-"}</td><td>${r.proto||"-"}</td>`;
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  el.innerHTML = "";
+  el.appendChild(table);
+}
+
+function renderVlans(vlans){
+  const el = document.getElementById("vlans");
+  const table = document.createElement("table");
+  table.className = "table";
+  table.innerHTML = `<thead><tr><th>VLAN ID</th><th>Имя</th><th>Порты</th><th>Тип</th></tr></thead>`;
+  const tbody = document.createElement("tbody");
+  for (const v of vlans){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td contenteditable="true" data-key="id">${v.id}</td>
+      <td contenteditable="true" data-key="name">${v.name||""}</td>
+      <td contenteditable="true" data-key="ports">${(v.ports||[]).join(", ")}</td>
+      <td>
+        <select data-key="type">
+          <option ${v.type==="access"?"selected":""} value="access">access</option>
+          <option ${v.type==="trunk"?"selected":""} value="trunk">trunk</option>
+        </select>
+      </td>`;
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  el.innerHTML = "";
+  el.appendChild(table);
+  document.getElementById("saveVlans").onclick = async () => {
+    const updated = [...tbody.querySelectorAll("tr")].map(tr => {
+      const obj = {};
+      tr.querySelectorAll("[contenteditable], select").forEach(cell => {
+        const key = cell.dataset.key;
+        let val = cell.tagName === "SELECT" ? cell.value : cell.innerText.trim();
+        if (key==="id") val = Number(val);
+        if (key==="ports") val = val.split(",").map(s=>s.trim()).filter(Boolean);
+        obj[key] = val;
+      });
+      return obj;
+    });
+    const res = await fetch(`/api/device/${DEVICE_ID}/vlans`,{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({vlans: updated})
+    });
+    const data = await res.json();
+    if (data.ok) alert("VLAN сохранены");
+    else alert(data.error || "Ошибка");
+  };
+}
+
+function renderArp(entries){
+  const el = document.getElementById("arp");
+  const table = document.createElement("table");
+  table.className = "table";
+  table.innerHTML = `<thead><tr><th>IP</th><th>MAC</th><th>Интерфейс</th><th>Время</th></tr></thead>`;
+  const tbody = document.createElement("tbody");
+  for (const a of entries){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${a.ip}</td><td>${a.mac}</td><td>${a.iface}</td><td>${a.age||"-"}</td>`;
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  el.innerHTML = "";
+  el.appendChild(table);
+}
+
+async function loadLogs(){
+  const params = new URLSearchParams();
+  const level = document.getElementById("logLevel").value;
+  const since = document.getElementById("since").value;
+  const until = document.getElementById("until").value;
+  if (level) params.append("level", level);
+  if (since) params.append("since", new Date(since).toISOString());
+  if (until) params.append("until", new Date(until).toISOString());
+  const res = await fetch(`/api/device/${DEVICE_ID}/logs?`+params.toString());
+  const {logs} = await res.json();
+  const el = document.getElementById("logs");
+  const table = document.createElement("table");
+  table.className = "table";
+  table.innerHTML = `<thead><tr><th>Время</th><th>Уровень</th><th>Сообщение</th></tr></thead>`;
+  const tbody = document.createElement("tbody");
+  for (const l of logs){
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${l.time}</td><td>${l.level}</td><td>${l.msg}</td>`;
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  el.innerHTML = "";
+  el.appendChild(table);
+}
+document.getElementById("applyLogs").addEventListener("click", loadLogs);
+
+async function saveMeta(){
+  const location = document.getElementById("editLocation").value;
+  const notes = document.getElementById("editNotes").value;
+  const res = await fetch(`/api/device/${DEVICE_ID}/meta`, {
+    method:"PUT",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({location, notes})
+  });
+  const data = await res.json();
+  if (data.ok) alert("Обновлено");
+  else alert(data.error || "Ошибка");
+}
+
+document.getElementById("logoutBtn")?.addEventListener("click", async ()=>{
+  await fetch("/api/logout",{method:"POST"});
+  window.location="/login";
+});
+
+loadDevice();
+</script>
+{% endblock %}

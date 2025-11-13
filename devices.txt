@@ -1,0 +1,1351 @@
+{
+  "devices": [
+    {
+      "_type": "device",
+      "id": "Core-R1",
+      "type": "router",
+      "vendor": "Cisco",
+      "model": "ASR1001",
+      "hostname": "core-r1",
+      "management_ip": "10.0.0.1",
+      "role": "core",
+      "uptime": "15d 16:40:20",
+      "temperature": "35°C",
+      "location": "DC-1/R1",
+      "notes": "Core router A",
+      "interfaces": [
+        {
+          "name": "Te0/0/0",
+          "ip": "172.16.0.1/30",
+          "vlan": "",
+          "speed": "40G",
+          "desc": "Core interconnect",
+          "admin_status": "up"
+        },
+        {
+          "name": "Te0/0/1",
+          "ip": "10.255.0.1/30",
+          "vlan": "",
+          "speed": "10G",
+          "desc": "Uplink to Dist-SW1",
+          "admin_status": "up"
+        },
+        {
+          "name": "Te0/0/2",
+          "ip": "10.255.0.5/30",
+          "vlan": "",
+          "speed": "10G",
+          "desc": "Uplink to Dist-SW2",
+          "admin_status": "up"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "0.0.0.0/0",
+          "nexthop": "172.16.0.254",
+          "iface": "Te0/0/0",
+          "metric": 1,
+          "proto": "static"
+        },
+        {
+          "prefix": "10.0.0.0/16",
+          "nexthop": "",
+          "iface": "",
+          "metric": 0,
+          "proto": "connected"
+        },
+        {
+          "prefix": "10.0.2.0/24",
+          "nexthop": "10.255.0.2",
+          "iface": "Te0/0/1",
+          "metric": 20,
+          "proto": "OSPF"
+        }
+      ],
+      "vlans": [
+        {
+          "id": 10,
+          "name": "Users",
+          "ports": [
+            "Te0/0/1"
+          ],
+          "type": "trunk"
+        },
+        {
+          "id": 20,
+          "name": "Servers",
+          "ports": [
+            "Te0/0/2"
+          ],
+          "type": "trunk"
+        },
+        {
+          "id": 30,
+          "name": "Voice",
+          "ports": [
+            "Te0/0/1"
+          ],
+          "type": "trunk"
+        }
+      ],
+      "arp": [
+        {
+          "ip": "10.0.1.1",
+          "mac": "00:11:22:33:44:01",
+          "iface": "Te0/0/1",
+          "age": "00:00:22"
+        },
+        {
+          "ip": "10.0.1.2",
+          "mac": "00:11:22:33:44:02",
+          "iface": "Te0/0/2",
+          "age": "00:01:02"
+        }
+      ],
+      "logs": [
+        {
+          "time": "2025-11-11T10:58:50Z",
+          "level": "INFO",
+          "msg": "BGP session established with 172.16.0.2"
+        },
+        {
+          "time": "2025-11-11T11:28:50Z",
+          "level": "WARN",
+          "msg": "High CPU usage detected"
+        },
+        {
+          "time": "2025-11-11T12:43:50Z",
+          "level": "INFO",
+          "msg": "Interface Te0/0/1 up"
+        }
+      ]
+    },
+    {
+      "_type": "device",
+      "id": "Core-R2",
+      "type": "router",
+      "vendor": "Juniper",
+      "model": "MX204",
+      "hostname": "core-r2",
+      "management_ip": "10.0.0.2",
+      "role": "core",
+      "uptime": "53d 18:18:09",
+      "temperature": "53°C",
+      "location": "DC-1/R2",
+      "notes": "Core router B",
+      "interfaces": [
+        {
+          "name": "Te0/0/0",
+          "ip": "172.16.0.2/30",
+          "vlan": "",
+          "speed": "40G",
+          "desc": "Core interconnect",
+          "admin_status": "up"
+        },
+        {
+          "name": "Te0/0/3",
+          "ip": "10.255.0.9/30",
+          "vlan": "",
+          "speed": "10G",
+          "desc": "Uplink to Dist-SW2",
+          "admin_status": "up"
+        },
+        {
+          "name": "Te0/0/4",
+          "ip": "10.255.0.13/30",
+          "vlan": "",
+          "speed": "10G",
+          "desc": "Uplink to Dist-SW3",
+          "admin_status": "down"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "0.0.0.0/0",
+          "nexthop": "172.16.0.254",
+          "iface": "Te0/0/0",
+          "metric": 1,
+          "proto": "static"
+        },
+        {
+          "prefix": "10.0.3.0/24",
+          "nexthop": "10.255.0.10",
+          "iface": "Te0/0/3",
+          "metric": 20,
+          "proto": "OSPF"
+        }
+      ],
+      "vlans": [
+        {
+          "id": 20,
+          "name": "Servers",
+          "ports": [
+            "Te0/0/3"
+          ],
+          "type": "trunk"
+        }
+      ],
+      "arp": [],
+      "logs": [
+        {
+          "time": "2025-11-11T09:58:50Z",
+          "level": "ERROR",
+          "msg": "OSPF neighbor down on Te0/0/4"
+        },
+        {
+          "time": "2025-11-11T12:38:50Z",
+          "level": "INFO",
+          "msg": "Config saved"
+        }
+      ]
+    },
+    {
+      "_type": "device",
+      "id": "Dist-SW1",
+      "type": "switch",
+      "vendor": "Cisco",
+      "model": "Catalyst 9300",
+      "hostname": "dist-sw1",
+      "management_ip": "10.0.1.1",
+      "role": "distribution",
+      "uptime": "38d 19:43:21",
+      "temperature": "38°C",
+      "location": "DC-1/D1",
+      "notes": "Distribution switch",
+      "interfaces": [
+        {
+          "name": "Te1/0/1",
+          "ip": "10.255.0.2/30",
+          "vlan": "",
+          "speed": "10G",
+          "desc": "Uplink to Core-R1",
+          "admin_status": "up"
+        },
+        {
+          "name": "Te1/0/2",
+          "ip": "10.255.0.10/30",
+          "vlan": "",
+          "speed": "10G",
+          "desc": "Uplink to Core-R2",
+          "admin_status": "up"
+        },
+        {
+          "name": "Gi1/0/1",
+          "ip": "",
+          "vlan": "10",
+          "speed": "1G",
+          "desc": "Downlink access",
+          "admin_status": "up"
+        },
+        {
+          "name": "Gi1/0/2",
+          "ip": "",
+          "vlan": "20",
+          "speed": "1G",
+          "desc": "Downlink access",
+          "admin_status": "up"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "10.0.2.0/24",
+          "nexthop": "",
+          "iface": "Gi1/0/1",
+          "metric": 0,
+          "proto": "connected"
+        },
+        {
+          "prefix": "10.0.3.0/24",
+          "nexthop": "",
+          "iface": "Gi1/0/2",
+          "metric": 0,
+          "proto": "connected"
+        }
+      ],
+      "vlans": [
+        {
+          "id": 10,
+          "name": "Users",
+          "ports": [
+            "Gi1/0/1-12"
+          ],
+          "type": "trunk"
+        },
+        {
+          "id": 20,
+          "name": "Servers",
+          "ports": [
+            "Gi1/0/13-24"
+          ],
+          "type": "trunk"
+        },
+        {
+          "id": 30,
+          "name": "Voice",
+          "ports": [
+            "Gi1/0/5-8"
+          ],
+          "type": "trunk"
+        }
+      ],
+      "arp": [
+        {
+          "ip": "10.0.2.1",
+          "mac": "00:11:22:33:55:01",
+          "iface": "Gi1/0/1",
+          "age": "00:02:00"
+        }
+      ],
+      "logs": [
+        {
+          "time": "2025-11-11T11:58:50Z",
+          "level": "INFO",
+          "msg": "LLDP neighbor updated"
+        },
+        {
+          "time": "2025-11-11T12:53:50Z",
+          "level": "DEBUG",
+          "msg": "STP topology change"
+        }
+      ]
+    },
+    {
+      "_type": "device",
+      "id": "Dist-SW2",
+      "type": "switch",
+      "vendor": "Huawei",
+      "model": "S5720",
+      "hostname": "dist-sw2",
+      "management_ip": "10.0.1.2",
+      "role": "distribution",
+      "uptime": "23d 18:18:09",
+      "temperature": "53°C",
+      "location": "DC-1/D2",
+      "notes": "Distribution switch",
+      "interfaces": [
+        {
+          "name": "Te1/0/1",
+          "ip": "10.255.0.6/30",
+          "vlan": "",
+          "speed": "10G",
+          "desc": "Uplink to Core-R1",
+          "admin_status": "up"
+        },
+        {
+          "name": "Te1/0/2",
+          "ip": "10.255.0.14/30",
+          "vlan": "",
+          "speed": "10G",
+          "desc": "Uplink to Core-R2",
+          "admin_status": "up"
+        },
+        {
+          "name": "Gi1/0/1",
+          "ip": "",
+          "vlan": "10",
+          "speed": "1G",
+          "desc": "Downlink access",
+          "admin_status": "up"
+        },
+        {
+          "name": "Gi1/0/2",
+          "ip": "",
+          "vlan": "20",
+          "speed": "1G",
+          "desc": "Downlink access",
+          "admin_status": "up"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "10.0.2.0/24",
+          "nexthop": "",
+          "iface": "Gi1/0/1",
+          "metric": 0,
+          "proto": "connected"
+        },
+        {
+          "prefix": "10.0.3.0/24",
+          "nexthop": "",
+          "iface": "Gi1/0/2",
+          "metric": 0,
+          "proto": "connected"
+        }
+      ],
+      "vlans": [
+        {
+          "id": 10,
+          "name": "Users",
+          "ports": [
+            "Gi1/0/1-12"
+          ],
+          "type": "trunk"
+        },
+        {
+          "id": 20,
+          "name": "Servers",
+          "ports": [
+            "Gi1/0/13-24"
+          ],
+          "type": "trunk"
+        },
+        {
+          "id": 30,
+          "name": "Voice",
+          "ports": [
+            "Gi1/0/5-8"
+          ],
+          "type": "trunk"
+        }
+      ],
+      "arp": [
+        {
+          "ip": "10.0.2.2",
+          "mac": "00:11:22:33:55:02",
+          "iface": "Gi1/0/1",
+          "age": "00:02:00"
+        }
+      ],
+      "logs": [
+        {
+          "time": "2025-11-11T11:58:50Z",
+          "level": "INFO",
+          "msg": "LLDP neighbor updated"
+        },
+        {
+          "time": "2025-11-11T12:53:50Z",
+          "level": "DEBUG",
+          "msg": "STP topology change"
+        }
+      ]
+    },
+    {
+      "_type": "device",
+      "id": "Dist-SW3",
+      "type": "switch",
+      "vendor": "Eltex",
+      "model": "MES3324",
+      "hostname": "dist-sw3",
+      "management_ip": "10.0.1.3",
+      "role": "distribution",
+      "uptime": "46d 21:21:10",
+      "temperature": "36°C",
+      "location": "DC-1/D3",
+      "notes": "Distribution (maintenance)",
+      "interfaces": [
+        {
+          "name": "Te1/0/1",
+          "ip": "10.255.0.10/30",
+          "vlan": "",
+          "speed": "10G",
+          "desc": "Uplink to Core-R1",
+          "admin_status": "down"
+        },
+        {
+          "name": "Te1/0/2",
+          "ip": "10.255.0.18/30",
+          "vlan": "",
+          "speed": "10G",
+          "desc": "Uplink to Core-R2",
+          "admin_status": "down"
+        },
+        {
+          "name": "Gi1/0/1",
+          "ip": "",
+          "vlan": "10",
+          "speed": "1G",
+          "desc": "Downlink access",
+          "admin_status": "up"
+        },
+        {
+          "name": "Gi1/0/2",
+          "ip": "",
+          "vlan": "20",
+          "speed": "1G",
+          "desc": "Downlink access",
+          "admin_status": "down"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "10.0.2.0/24",
+          "nexthop": "",
+          "iface": "Gi1/0/1",
+          "metric": 0,
+          "proto": "connected"
+        },
+        {
+          "prefix": "10.0.3.0/24",
+          "nexthop": "",
+          "iface": "Gi1/0/2",
+          "metric": 0,
+          "proto": "connected"
+        }
+      ],
+      "vlans": [
+        {
+          "id": 10,
+          "name": "Users",
+          "ports": [
+            "Gi1/0/1-12"
+          ],
+          "type": "trunk"
+        },
+        {
+          "id": 20,
+          "name": "Servers",
+          "ports": [
+            "Gi1/0/13-24"
+          ],
+          "type": "trunk"
+        },
+        {
+          "id": 30,
+          "name": "Voice",
+          "ports": [
+            "Gi1/0/5-8"
+          ],
+          "type": "trunk"
+        }
+      ],
+      "arp": [
+        {
+          "ip": "10.0.2.3",
+          "mac": "00:11:22:33:55:03",
+          "iface": "Gi1/0/1",
+          "age": "00:02:00"
+        }
+      ],
+      "logs": [
+        {
+          "time": "2025-11-11T11:58:50Z",
+          "level": "INFO",
+          "msg": "LLDP neighbor updated"
+        },
+        {
+          "time": "2025-11-11T12:53:50Z",
+          "level": "DEBUG",
+          "msg": "STP topology change"
+        }
+      ]
+    },
+    {
+      "_type": "device",
+      "id": "Access-1",
+      "type": "switch",
+      "vendor": "Cisco",
+      "model": "Catalyst 9300",
+      "hostname": "access-1",
+      "management_ip": "10.0.2.1",
+      "role": "access",
+      "uptime": "45d 14:50:55",
+      "temperature": "45°C",
+      "location": "FL-2/A1",
+      "notes": "Access switch",
+      "interfaces": [
+        {
+          "name": "Gi1/0/24",
+          "ip": "",
+          "vlan": "trunk",
+          "speed": "1G",
+          "desc": "Uplink to distribution",
+          "admin_status": "up"
+        },
+        {
+          "name": "Gi1/0/1",
+          "ip": "",
+          "vlan": "10",
+          "speed": "1G",
+          "desc": "User port",
+          "admin_status": "up"
+        },
+        {
+          "name": "Gi1/0/2",
+          "ip": "",
+          "vlan": "20",
+          "speed": "1G",
+          "desc": "Server/Device",
+          "admin_status": "up"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "0.0.0.0/0",
+          "nexthop": "10.0.1.1",
+          "iface": "Gi1/0/24",
+          "metric": 1,
+          "proto": "static"
+        }
+      ],
+      "vlans": [
+        {
+          "id": 10,
+          "name": "Users",
+          "ports": [
+            "Gi1/0/1-12"
+          ],
+          "type": "access"
+        },
+        {
+          "id": 20,
+          "name": "Servers",
+          "ports": [
+            "Gi1/0/13-23"
+          ],
+          "type": "access"
+        },
+        {
+          "id": 30,
+          "name": "Voice",
+          "ports": [
+            "Gi1/0/14-15"
+          ],
+          "type": "access"
+        }
+      ],
+      "arp": [
+        {
+          "ip": "10.0.3.11",
+          "mac": "00:aa:bb:cc:dd:01",
+          "iface": "Gi1/0/1",
+          "age": "00:01:10"
+        }
+      ],
+      "logs": [
+        {
+          "time": "2025-11-11T12:36:50Z",
+          "level": "INFO",
+          "msg": "Port Gi1/0/1 up"
+        },
+        {
+          "time": "2025-11-11T12:46:50Z",
+          "level": "INFO",
+          "msg": "Config saved"
+        }
+      ]
+    },
+    {
+      "_type": "device",
+      "id": "Access-2",
+      "type": "switch",
+      "vendor": "Huawei",
+      "model": "S5720",
+      "hostname": "access-2",
+      "management_ip": "10.0.2.2",
+      "role": "access",
+      "uptime": "12d 23:47:23",
+      "temperature": "42°C",
+      "location": "FL-2/A2",
+      "notes": "Access switch",
+      "interfaces": [
+        {
+          "name": "Gi1/0/24",
+          "ip": "",
+          "vlan": "trunk",
+          "speed": "1G",
+          "desc": "Uplink to distribution",
+          "admin_status": "up"
+        },
+        {
+          "name": "Gi1/0/1",
+          "ip": "",
+          "vlan": "10",
+          "speed": "1G",
+          "desc": "User port",
+          "admin_status": "up"
+        },
+        {
+          "name": "Gi1/0/2",
+          "ip": "",
+          "vlan": "20",
+          "speed": "1G",
+          "desc": "Server/Device",
+          "admin_status": "up"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "0.0.0.0/0",
+          "nexthop": "10.0.1.1",
+          "iface": "Gi1/0/24",
+          "metric": 1,
+          "proto": "static"
+        }
+      ],
+      "vlans": [
+        {
+          "id": 10,
+          "name": "Users",
+          "ports": [
+            "Gi1/0/1-12"
+          ],
+          "type": "access"
+        },
+        {
+          "id": 20,
+          "name": "Servers",
+          "ports": [
+            "Gi1/0/13-23"
+          ],
+          "type": "access"
+        },
+        {
+          "id": 30,
+          "name": "Voice",
+          "ports": [
+            "Gi1/0/14-15"
+          ],
+          "type": "access"
+        }
+      ],
+      "arp": [
+        {
+          "ip": "10.0.3.12",
+          "mac": "00:aa:bb:cc:dd:02",
+          "iface": "Gi1/0/1",
+          "age": "00:01:10"
+        }
+      ],
+      "logs": [
+        {
+          "time": "2025-11-11T12:36:50Z",
+          "level": "INFO",
+          "msg": "Port Gi1/0/1 up"
+        },
+        {
+          "time": "2025-11-11T12:46:50Z",
+          "level": "INFO",
+          "msg": "Config saved"
+        }
+      ]
+    },
+    {
+      "_type": "device",
+      "id": "Access-3",
+      "type": "switch",
+      "vendor": "MikroTik",
+      "model": "CCR1036",
+      "hostname": "access-3",
+      "management_ip": "10.0.2.3",
+      "role": "access",
+      "uptime": "37d 16:52:56",
+      "temperature": "47°C",
+      "location": "FL-3/A3",
+      "notes": "Access switch (10G uplink)",
+      "interfaces": [
+        {
+          "name": "Gi1/0/24",
+          "ip": "",
+          "vlan": "trunk",
+          "speed": "1G",
+          "desc": "Uplink to distribution",
+          "admin_status": "up"
+        },
+        {
+          "name": "Gi1/0/1",
+          "ip": "",
+          "vlan": "10",
+          "speed": "1G",
+          "desc": "User port",
+          "admin_status": "up"
+        },
+        {
+          "name": "Gi1/0/2",
+          "ip": "",
+          "vlan": "20",
+          "speed": "1G",
+          "desc": "Server/Device",
+          "admin_status": "up"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "0.0.0.0/0",
+          "nexthop": "10.0.1.1",
+          "iface": "Gi1/0/24",
+          "metric": 1,
+          "proto": "static"
+        }
+      ],
+      "vlans": [
+        {
+          "id": 10,
+          "name": "Users",
+          "ports": [
+            "Gi1/0/1-12"
+          ],
+          "type": "access"
+        },
+        {
+          "id": 20,
+          "name": "Servers",
+          "ports": [
+            "Gi1/0/13-23"
+          ],
+          "type": "access"
+        },
+        {
+          "id": 30,
+          "name": "Voice",
+          "ports": [
+            "Gi1/0/14-15"
+          ],
+          "type": "access"
+        }
+      ],
+      "arp": [
+        {
+          "ip": "10.0.3.13",
+          "mac": "00:aa:bb:cc:dd:03",
+          "iface": "Gi1/0/1",
+          "age": "00:01:10"
+        }
+      ],
+      "logs": [
+        {
+          "time": "2025-11-11T12:36:50Z",
+          "level": "INFO",
+          "msg": "Port Gi1/0/1 up"
+        },
+        {
+          "time": "2025-11-11T12:46:50Z",
+          "level": "INFO",
+          "msg": "Config saved"
+        }
+      ]
+    },
+    {
+      "_type": "device",
+      "id": "Access-4",
+      "type": "switch",
+      "vendor": "Eltex",
+      "model": "MES3324",
+      "hostname": "access-4",
+      "management_ip": "10.0.2.4",
+      "role": "access",
+      "uptime": "11d 18:06:33",
+      "temperature": "41°C",
+      "location": "FL-4/A4",
+      "notes": "Access switch (down)",
+      "interfaces": [
+        {
+          "name": "Gi1/0/24",
+          "ip": "",
+          "vlan": "trunk",
+          "speed": "1G",
+          "desc": "Uplink to distribution",
+          "admin_status": "down"
+        },
+        {
+          "name": "Gi1/0/1",
+          "ip": "",
+          "vlan": "10",
+          "speed": "1G",
+          "desc": "User port",
+          "admin_status": "up"
+        },
+        {
+          "name": "Gi1/0/2",
+          "ip": "",
+          "vlan": "20",
+          "speed": "1G",
+          "desc": "Server/Device",
+          "admin_status": "down"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "0.0.0.0/0",
+          "nexthop": "10.0.1.1",
+          "iface": "Gi1/0/24",
+          "metric": 1,
+          "proto": "static"
+        }
+      ],
+      "vlans": [
+        {
+          "id": 10,
+          "name": "Users",
+          "ports": [
+            "Gi1/0/1-12"
+          ],
+          "type": "access"
+        },
+        {
+          "id": 20,
+          "name": "Servers",
+          "ports": [
+            "Gi1/0/13-23"
+          ],
+          "type": "access"
+        },
+        {
+          "id": 30,
+          "name": "Voice",
+          "ports": [
+            "Gi1/0/14-15"
+          ],
+          "type": "access"
+        }
+      ],
+      "arp": [
+        {
+          "ip": "10.0.3.14",
+          "mac": "00:aa:bb:cc:dd:04",
+          "iface": "Gi1/0/1",
+          "age": "00:01:10"
+        }
+      ],
+      "logs": [
+        {
+          "time": "2025-11-11T12:36:50Z",
+          "level": "INFO",
+          "msg": "Port Gi1/0/1 up"
+        },
+        {
+          "time": "2025-11-11T12:46:50Z",
+          "level": "WARN",
+          "msg": "Power supply minor alarm"
+        }
+      ]
+    },
+    {
+      "_type": "device",
+      "id": "PC-01",
+      "type": "host",
+      "vendor": "Generic",
+      "model": "N/A",
+      "hostname": "pc-01",
+      "management_ip": "10.0.3.11",
+      "role": "host",
+      "uptime": "14d 23:59:59",
+      "temperature": "—",
+      "location": "Office-201",
+      "notes": "User workstation",
+      "interfaces": [
+        {
+          "name": "eth0",
+          "ip": "10.0.3.11/24",
+          "vlan": "10",
+          "speed": "1G",
+          "desc": "primary",
+          "admin_status": "up"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "0.0.0.0/0",
+          "nexthop": "10.0.2.1",
+          "iface": "eth0",
+          "metric": 1,
+          "proto": "static"
+        }
+      ],
+      "vlans": [],
+      "arp": [
+        {
+          "ip": "10.0.2.1",
+          "mac": "de:ad:be:ef:00:01",
+          "iface": "eth0",
+          "age": "00:00:30"
+        }
+      ],
+      "logs": [
+        {
+          "time": "2025-11-11T12:51:50Z",
+          "level": "INFO",
+          "msg": "DHCP lease renewed"
+        },
+        {
+          "time": "2025-11-11T12:56:50Z",
+          "level": "INFO",
+          "msg": "Agent heartbeat"
+        }
+      ]
+    },
+    {
+      "_type": "device",
+      "id": "PC-02",
+      "type": "host",
+      "vendor": "Generic",
+      "model": "N/A",
+      "hostname": "pc-02",
+      "management_ip": "10.0.3.12",
+      "role": "host",
+      "uptime": "32d 07:07:03",
+      "temperature": "—",
+      "location": "Office-202",
+      "notes": "User workstation",
+      "interfaces": [
+        {
+          "name": "eth0",
+          "ip": "10.0.3.12/24",
+          "vlan": "10",
+          "speed": "1G",
+          "desc": "primary",
+          "admin_status": "up"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "0.0.0.0/0",
+          "nexthop": "10.0.2.1",
+          "iface": "eth0",
+          "metric": 1,
+          "proto": "static"
+        }
+      ],
+      "vlans": [],
+      "arp": [
+        {
+          "ip": "10.0.2.1",
+          "mac": "de:ad:be:ef:00:01",
+          "iface": "eth0",
+          "age": "00:00:30"
+        }
+      ],
+      "logs": [
+        {
+          "time": "2025-11-11T12:51:50Z",
+          "level": "INFO",
+          "msg": "DHCP lease renewed"
+        },
+        {
+          "time": "2025-11-11T12:56:50Z",
+          "level": "INFO",
+          "msg": "Agent heartbeat"
+        }
+      ]
+    },
+    {
+      "_type": "device",
+      "id": "Srv-DB",
+      "type": "host",
+      "vendor": "Generic",
+      "model": "N/A",
+      "hostname": "srv-db",
+      "management_ip": "10.0.3.21",
+      "role": "host",
+      "uptime": "8d 21:33:46",
+      "temperature": "—",
+      "location": "DC-1/Cab",
+      "notes": "Database server",
+      "interfaces": [
+        {
+          "name": "eth0",
+          "ip": "10.0.3.21/24",
+          "vlan": "20",
+          "speed": "1G",
+          "desc": "primary",
+          "admin_status": "up"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "0.0.0.0/0",
+          "nexthop": "10.0.2.1",
+          "iface": "eth0",
+          "metric": 1,
+          "proto": "static"
+        }
+      ],
+      "vlans": [],
+      "arp": [
+        {
+          "ip": "10.0.2.1",
+          "mac": "de:ad:be:ef:00:01",
+          "iface": "eth0",
+          "age": "00:00:30"
+        }
+      ],
+      "logs": [
+        {
+          "time": "2025-11-11T12:51:50Z",
+          "level": "INFO",
+          "msg": "DHCP lease renewed"
+        },
+        {
+          "time": "2025-11-11T12:56:50Z",
+          "level": "INFO",
+          "msg": "Agent heartbeat"
+        }
+      ]
+    },
+    {
+      "_type": "device",
+      "id": "AP-Office",
+      "type": "host",
+      "vendor": "Generic",
+      "model": "N/A",
+      "hostname": "ap-office",
+      "management_ip": "10.0.3.31",
+      "role": "host",
+      "uptime": "7d 02:02:01",
+      "temperature": "—",
+      "location": "Office-200",
+      "notes": "Wi‑Fi AP",
+      "interfaces": [
+        {
+          "name": "eth0",
+          "ip": "10.0.3.31/24",
+          "vlan": "10",
+          "speed": "1G",
+          "desc": "primary",
+          "admin_status": "up"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "0.0.0.0/0",
+          "nexthop": "10.0.2.1",
+          "iface": "eth0",
+          "metric": 1,
+          "proto": "static"
+        }
+      ],
+      "vlans": [],
+      "arp": [
+        {
+          "ip": "10.0.2.1",
+          "mac": "de:ad:be:ef:00:01",
+          "iface": "eth0",
+          "age": "00:00:30"
+        }
+      ],
+      "logs": [
+        {
+          "time": "2025-11-11T12:51:50Z",
+          "level": "INFO",
+          "msg": "DHCP lease renewed"
+        },
+        {
+          "time": "2025-11-11T12:56:50Z",
+          "level": "INFO",
+          "msg": "Agent heartbeat"
+        }
+      ]
+    },
+    {
+      "_type": "device",
+      "id": "IP-Cam-01",
+      "type": "host",
+      "vendor": "Generic",
+      "model": "N/A",
+      "hostname": "ip-cam-01",
+      "management_ip": "10.0.3.41",
+      "role": "host",
+      "uptime": "7d 02:02:01",
+      "temperature": "—",
+      "location": "Lobby",
+      "notes": "IP camera",
+      "interfaces": [
+        {
+          "name": "eth0",
+          "ip": "10.0.3.41/24",
+          "vlan": "20",
+          "speed": "1G",
+          "desc": "primary",
+          "admin_status": "up"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "0.0.0.0/0",
+          "nexthop": "10.0.2.1",
+          "iface": "eth0",
+          "metric": 1,
+          "proto": "static"
+        }
+      ],
+      "vlans": [],
+      "arp": [
+        {
+          "ip": "10.0.2.1",
+          "mac": "de:ad:be:ef:00:01",
+          "iface": "eth0",
+          "age": "00:00:30"
+        }
+      ],
+      "logs": [
+        {
+          "time": "2025-11-11T12:51:50Z",
+          "level": "INFO",
+          "msg": "DHCP lease renewed"
+        },
+        {
+          "time": "2025-11-11T12:56:50Z",
+          "level": "INFO",
+          "msg": "Agent heartbeat"
+        }
+      ]
+    },
+    {
+      "_type": "device",
+      "id": "Printer-01",
+      "type": "host",
+      "vendor": "Generic",
+      "model": "N/A",
+      "hostname": "printer-01",
+      "management_ip": "10.0.3.51",
+      "role": "host",
+      "uptime": "52d 09:57:28",
+      "temperature": "—",
+      "location": "Office-210",
+      "notes": "Office printer",
+      "interfaces": [
+        {
+          "name": "eth0",
+          "ip": "10.0.3.51/24",
+          "vlan": "10",
+          "speed": "1G",
+          "desc": "primary",
+          "admin_status": "up"
+        }
+      ],
+      "routing": [
+        {
+          "prefix": "0.0.0.0/0",
+          "nexthop": "10.0.2.1",
+          "iface": "eth0",
+          "metric": 1,
+          "proto": "static"
+        }
+      ],
+      "vlans": [],
+      "arp": [
+        {
+          "ip": "10.0.2.1",
+          "mac": "de:ad:be:ef:00:01",
+          "iface": "eth0",
+          "age": "00:00:30"
+        }
+      ],
+      "logs": [
+        {
+          "time": "2025-11-11T12:51:50Z",
+          "level": "INFO",
+          "msg": "DHCP lease renewed"
+        },
+        {
+          "time": "2025-11-11T12:56:50Z",
+          "level": "INFO",
+          "msg": "Agent heartbeat"
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "_type": "link",
+      "source": "Core-R1",
+      "target": "Core-R2",
+      "speed": "40G",
+      "status": "up"
+    },
+    {
+      "_type": "link",
+      "source": "Core-R1",
+      "target": "Dist-SW1",
+      "speed": "10G",
+      "status": "up"
+    },
+    {
+      "_type": "link",
+      "source": "Core-R1",
+      "target": "Dist-SW2",
+      "speed": "10G",
+      "status": "up"
+    },
+    {
+      "_type": "link",
+      "source": "Core-R2",
+      "target": "Dist-SW2",
+      "speed": "10G",
+      "status": "up"
+    },
+    {
+      "_type": "link",
+      "source": "Core-R2",
+      "target": "Dist-SW3",
+      "speed": "10G",
+      "status": "down"
+    },
+    {
+      "_type": "link",
+      "source": "Dist-SW1",
+      "target": "Access-1",
+      "speed": "1G",
+      "status": "up"
+    },
+    {
+      "_type": "link",
+      "source": "Dist-SW1",
+      "target": "Access-2",
+      "speed": "1G",
+      "status": "up"
+    },
+    {
+      "_type": "link",
+      "source": "Dist-SW2",
+      "target": "Access-2",
+      "speed": "1G",
+      "status": "up"
+    },
+    {
+      "_type": "link",
+      "source": "Dist-SW2",
+      "target": "Access-3",
+      "speed": "1G",
+      "status": "up"
+    },
+    {
+      "_type": "link",
+      "source": "Dist-SW3",
+      "target": "Access-4",
+      "speed": "1G",
+      "status": "down"
+    },
+    {
+      "_type": "link",
+      "source": "Access-1",
+      "target": "PC-01",
+      "speed": "1G",
+      "status": "up"
+    },
+    {
+      "_type": "link",
+      "source": "Access-1",
+      "target": "AP-Office",
+      "speed": "1G",
+      "status": "up"
+    },
+    {
+      "_type": "link",
+      "source": "Access-2",
+      "target": "PC-02",
+      "speed": "1G",
+      "status": "up"
+    },
+    {
+      "_type": "link",
+      "source": "Access-3",
+      "target": "Srv-DB",
+      "speed": "10G",
+      "status": "up"
+    },
+    {
+      "_type": "link",
+      "source": "Access-4",
+      "target": "IP-Cam-01",
+      "speed": "1G",
+      "status": "down"
+    },
+    {
+      "_type": "link",
+      "source": "Access-4",
+      "target": "Printer-01",
+      "speed": "1G",
+      "status": "down"
+    }
+  ]
+}
