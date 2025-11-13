@@ -204,5 +204,36 @@ def api_logs(device_id):
 def serve_devices_txt():
     return send_from_directory(os.path.dirname(DATA_FILE), os.path.basename(DATA_FILE))
 
+
+@app.put("/api/device/<device_id>/vlans")
+def update_vlans(device_id):
+    data = request.json.get("vlans")
+    if not data:
+        return jsonify({"error": "No data"}), 400
+
+    dev = find_device(device_id)
+    if not dev:
+        return jsonify({"error": "Not found"}), 404
+
+    dev["vlans"] = data
+    save_db()
+    return jsonify({"ok": True})
+
+@app.put("/api/device/<device_id>/vlans")
+def save_vlans(device_id):
+    data = request.json.get("vlans")
+    if not data:
+        return jsonify({"error": "no data"}), 400
+
+    dev = find_device(device_id)
+    if not dev:
+        return jsonify({"error": "not found"}), 404
+
+    dev["vlans"] = data
+    save_db()
+    return jsonify({"ok": True})
+
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

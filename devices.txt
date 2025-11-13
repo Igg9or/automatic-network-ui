@@ -15,28 +15,31 @@
       "notes": "Core router A",
       "interfaces": [
         {
-          "name": "Te0/0/0",
-          "ip": "172.16.0.1/30",
-          "vlan": "",
-          "speed": "40G",
+          "admin_status": "up",
           "desc": "Core interconnect",
-          "admin_status": "up"
+          "ip": "172.16.0.1/30",
+          "name": "Te0/0/0",
+          "speed": "40G",
+          "vlan": "",
+          "status": "up"
         },
         {
-          "name": "Te0/0/1",
-          "ip": "10.255.0.1/30",
-          "vlan": "",
-          "speed": "10G",
+          "admin_status": "up",
           "desc": "Uplink to Dist-SW1",
-          "admin_status": "up"
+          "ip": "10.255.0.1/30",
+          "name": "Te0/0/1",
+          "speed": "10G",
+          "vlan": "",
+          "status": "up"
         },
         {
-          "name": "Te0/0/2",
-          "ip": "10.255.0.5/30",
-          "vlan": "",
-          "speed": "10G",
+          "admin_status": "up",
           "desc": "Uplink to Dist-SW2",
-          "admin_status": "up"
+          "ip": "10.255.0.4/30",
+          "name": "Te0/0/2",
+          "speed": "10G",
+          "vlan": "",
+          "status": "up"
         }
       ],
       "routing": [
@@ -118,6 +121,23 @@
           "level": "INFO",
           "msg": "Interface Te0/0/1 up"
         }
+      ],
+      "lldp": [
+        {
+          "local_iface": "Te0/0/0",
+          "neighbor_id": "Core-R2",
+          "neighbor_iface": "Te0/0/0"
+        },
+        {
+          "local_iface": "Te0/0/1",
+          "neighbor_id": "Dist-SW1",
+          "neighbor_iface": "Te1/0/1"
+        },
+        {
+          "local_iface": "Te0/0/2",
+          "neighbor_id": "Dist-SW2",
+          "neighbor_iface": "Te1/0/1"
+        }
       ]
     },
     {
@@ -139,8 +159,8 @@
           "ip": "172.16.0.2/30",
           "vlan": "",
           "speed": "40G",
-          "desc": "Core interconnect",
-          "admin_status": "up"
+          "desc": "Core interconnectvc",
+          "admin_status": "down"
         },
         {
           "name": "Te0/0/3",
@@ -196,6 +216,23 @@
           "time": "2025-11-11T12:38:50Z",
           "level": "INFO",
           "msg": "Config saved"
+        }
+      ],
+      "lldp": [
+        {
+          "local_iface": "Te0/0/0",
+          "neighbor_id": "Core-R1",
+          "neighbor_iface": "Te0/0/0"
+        },
+        {
+          "local_iface": "Te0/0/3",
+          "neighbor_id": "Dist-SW2",
+          "neighbor_iface": "Te1/0/2"
+        },
+        {
+          "local_iface": "Te0/0/4",
+          "neighbor_id": "Dist-SW3",
+          "neighbor_iface": "Te1/0/2"
         }
       ]
     },
@@ -307,6 +344,28 @@
           "level": "DEBUG",
           "msg": "STP topology change"
         }
+      ],
+      "lldp": [
+        {
+          "local_iface": "Te1/0/1",
+          "neighbor_id": "Core-R1",
+          "neighbor_iface": "Te0/0/1"
+        },
+        {
+          "local_iface": "Te1/0/2",
+          "neighbor_id": "Core-R2",
+          "neighbor_iface": "Te0/0/3"
+        },
+        {
+          "local_iface": "Gi1/0/1",
+          "neighbor_id": "Access-1",
+          "neighbor_iface": "Gi1/0/24"
+        },
+        {
+          "local_iface": "Gi1/0/2",
+          "neighbor_id": "Access-2",
+          "neighbor_iface": "Gi1/0/24"
+        }
       ]
     },
     {
@@ -326,10 +385,13 @@
         {
           "name": "Te1/0/1",
           "ip": "10.255.0.6/30",
-          "vlan": "",
+          "vlan": null,
           "speed": "10G",
           "desc": "Uplink to Core-R1",
-          "admin_status": "up"
+          "status": "up",
+          "errors": 0,
+          "crc": 0,
+          "traffic": "1.2G"
         },
         {
           "name": "Te1/0/2",
@@ -337,7 +399,10 @@
           "vlan": "",
           "speed": "10G",
           "desc": "Uplink to Core-R2",
-          "admin_status": "up"
+          "status": "up",
+          "errors": 0,
+          "crc": 0,
+          "traffic": "1.2G"
         },
         {
           "name": "Gi1/0/1",
@@ -416,6 +481,28 @@
           "time": "2025-11-11T12:53:50Z",
           "level": "DEBUG",
           "msg": "STP topology change"
+        }
+      ],
+      "lldp": [
+        {
+          "local_iface": "Te1/0/1",
+          "neighbor_id": "Core-R1",
+          "neighbor_iface": "Te0/0/2"
+        },
+        {
+          "local_iface": "Te1/0/2",
+          "neighbor_id": "Core-R2",
+          "neighbor_iface": "Te0/0/3"
+        },
+        {
+          "local_iface": "Gi1/0/1",
+          "neighbor_id": "Access-2",
+          "neighbor_iface": "Gi1/0/24"
+        },
+        {
+          "local_iface": "Gi1/0/2",
+          "neighbor_id": "Access-3",
+          "neighbor_iface": "Gi1/0/24"
         }
       ]
     },
@@ -527,6 +614,23 @@
           "level": "DEBUG",
           "msg": "STP topology change"
         }
+      ],
+      "lldp": [
+        {
+          "local_iface": "Te1/0/1",
+          "neighbor_id": "Core-R1",
+          "neighbor_iface": "Te0/0/2"
+        },
+        {
+          "local_iface": "Te1/0/2",
+          "neighbor_id": "Core-R2",
+          "neighbor_iface": "Te0/0/4"
+        },
+        {
+          "local_iface": "Gi1/0/1",
+          "neighbor_id": "Access-4",
+          "neighbor_iface": "Gi1/0/24"
+        }
       ]
     },
     {
@@ -621,6 +725,23 @@
           "time": "2025-11-11T12:46:50Z",
           "level": "INFO",
           "msg": "Config saved"
+        }
+      ],
+      "lldp": [
+        {
+          "local_iface": "Gi1/0/24",
+          "neighbor_id": "Dist-SW1",
+          "neighbor_iface": "Gi1/0/1"
+        },
+        {
+          "local_iface": "Gi1/0/1",
+          "neighbor_id": "PC-01",
+          "neighbor_iface": "eth0"
+        },
+        {
+          "local_iface": "Gi1/0/2",
+          "neighbor_id": "AP-Office",
+          "neighbor_iface": "eth0"
         }
       ]
     },
@@ -717,6 +838,18 @@
           "level": "INFO",
           "msg": "Config saved"
         }
+      ],
+      "lldp": [
+        {
+          "local_iface": "Gi1/0/24",
+          "neighbor_id": "Dist-SW1",
+          "neighbor_iface": "Gi1/0/2"
+        },
+        {
+          "local_iface": "Gi1/0/1",
+          "neighbor_id": "PC-02",
+          "neighbor_iface": "eth0"
+        }
       ]
     },
     {
@@ -811,6 +944,18 @@
           "time": "2025-11-11T12:46:50Z",
           "level": "INFO",
           "msg": "Config saved"
+        }
+      ],
+      "lldp": [
+        {
+          "local_iface": "Gi1/0/24",
+          "neighbor_id": "Dist-SW2",
+          "neighbor_iface": "Gi1/0/2"
+        },
+        {
+          "local_iface": "Gi1/0/2",
+          "neighbor_id": "Srv-DB",
+          "neighbor_iface": "eth0"
         }
       ]
     },
@@ -907,6 +1052,23 @@
           "level": "WARN",
           "msg": "Power supply minor alarm"
         }
+      ],
+      "lldp": [
+        {
+          "local_iface": "Gi1/0/24",
+          "neighbor_id": "Dist-SW3",
+          "neighbor_iface": "Gi1/0/1"
+        },
+        {
+          "local_iface": "Gi1/0/1",
+          "neighbor_id": "IP-Cam-01",
+          "neighbor_iface": "eth0"
+        },
+        {
+          "local_iface": "Gi1/0/2",
+          "neighbor_id": "Printer-01",
+          "neighbor_iface": "eth0"
+        }
       ]
     },
     {
@@ -960,6 +1122,13 @@
           "time": "2025-11-11T12:56:50Z",
           "level": "INFO",
           "msg": "Agent heartbeat"
+        }
+      ],
+      "lldp": [
+        {
+          "local_iface": "eth0",
+          "neighbor_id": "Access-1",
+          "neighbor_iface": "Gi1/0/1"
         }
       ]
     },
@@ -1015,6 +1184,13 @@
           "level": "INFO",
           "msg": "Agent heartbeat"
         }
+      ],
+      "lldp": [
+        {
+          "local_iface": "eth0",
+          "neighbor_id": "Access-2",
+          "neighbor_iface": "Gi1/0/1"
+        }
       ]
     },
     {
@@ -1068,6 +1244,13 @@
           "time": "2025-11-11T12:56:50Z",
           "level": "INFO",
           "msg": "Agent heartbeat"
+        }
+      ],
+      "lldp": [
+        {
+          "local_iface": "eth0",
+          "neighbor_id": "Access-3",
+          "neighbor_iface": "Gi1/0/2"
         }
       ]
     },
@@ -1123,6 +1306,13 @@
           "level": "INFO",
           "msg": "Agent heartbeat"
         }
+      ],
+      "lldp": [
+        {
+          "local_iface": "eth0",
+          "neighbor_id": "Access-1",
+          "neighbor_iface": "Gi1/0/2"
+        }
       ]
     },
     {
@@ -1177,6 +1367,13 @@
           "level": "INFO",
           "msg": "Agent heartbeat"
         }
+      ],
+      "lldp": [
+        {
+          "local_iface": "eth0",
+          "neighbor_id": "Access-4",
+          "neighbor_iface": "Gi1/0/1"
+        }
       ]
     },
     {
@@ -1230,6 +1427,13 @@
           "time": "2025-11-11T12:56:50Z",
           "level": "INFO",
           "msg": "Agent heartbeat"
+        }
+      ],
+      "lldp": [
+        {
+          "local_iface": "eth0",
+          "neighbor_id": "Access-4",
+          "neighbor_iface": "Gi1/0/2"
         }
       ]
     }

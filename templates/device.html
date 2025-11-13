@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="card">
+<section class="card device-container">
   <div class="tabs">
     <button class="tab active" data-tab="overview">Обзор</button>
     <button class="tab" data-tab="interfaces">Интерфейсы</button>
@@ -15,19 +15,40 @@
   </div>
   <div id="panel-interfaces" class="tab-panel">
     <div id="interfaces"></div>
+    <div class="iface-tools" style="display:flex; gap:15px; margin:15px 0;">
+    <input id="ifaceSearch" placeholder="Поиск интерфейсов..." 
+           style="width:220px;padding:8px 10px;border-radius:10px">
+
+    <select id="bulkVlan" style="width:120px">
+        <option value="">VLAN...</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="30">30</option>
+    </select>
+
+    <button class="btn btn-primary" id="applyBulkVlan">Применить VLAN</button>
+</div>
+
+
     <div class="actions">
-      <button id="saveInterfaces" class="btn btn-primary">Сохранить интерфейсы</button>
-    </div>
+    <button id="editInterfacesBtn" class="btn btn-primary">Редактировать</button>
+    <button id="saveInterfaces" class="btn btn-success" style="display:none">Сохранить</button>
+    <button id="cancelEdit" class="btn btn-ghost" style="display:none">Отмена</button>
+</div>
   </div>
   <div id="panel-routing" class="tab-panel">
     <div id="routing"></div>
   </div>
   <div id="panel-vlans" class="tab-panel">
-    <div id="vlans"></div>
     <div class="actions">
-      <button id="saveVlans" class="btn btn-primary">Сохранить VLAN</button>
+        <button id="editVlansBtn" class="btn btn-primary">Редактировать</button>
+        <button id="addVlanBtn" class="btn btn-success" style="display:none">Добавить VLAN</button>
+        <button id="saveVlansBtn" class="btn btn-success" style="display:none">Сохранить</button>
+        <button id="cancelVlansBtn" class="btn btn-ghost" style="display:none">Отмена</button>
     </div>
-  </div>
+
+    <div id="vlans"></div>
+</div>
   <div id="panel-arp" class="tab-panel">
     <div id="arp"></div>
   </div>
@@ -59,6 +80,29 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+
+  let currentSort = { col: null, asc: true };
+
+function sortBy(col) {
+    if (currentSort.col === col) {
+        currentSort.asc = !currentSort.asc;
+    } else {
+        currentSort.col = col;
+        currentSort.asc = true;
+    }
+
+    IFACE_CACHE.sort((a, b) => {
+        let A = (a[col] ?? "").toString().toLowerCase();
+        let B = (b[col] ?? "").toString().toLowerCase();
+        if (A < B) return currentSort.asc ? -1 : 1;
+        if (A > B) return currentSort.asc ? 1 : -1;
+        return 0;
+    });
+
+    renderInterfaces(IFACE_CACHE);
+}
+
+
 const DEVICE_ID = "{{ device_id }}";
 // Tabs
 document.querySelectorAll(".tab").forEach(btn => {
@@ -78,6 +122,7 @@ async function loadDevice() {
   renderInterfaces(device.interfaces || []);
   renderRouting(device.routing || []);
   renderVlans(device.vlans || []);
+  renderLLDP(device.lldp || []);
   renderArp(device.arp || []);
   await loadLogs();
 }
@@ -85,131 +130,643 @@ async function loadDevice() {
 function renderOverview(d){
   const el = document.getElementById("overview");
   el.innerHTML = `
-    <div class="kv">
+  <div class="kv">
       <div><span>Hostname</span><b>${d.hostname}</b></div>
       <div><span>IP</span><b>${d.management_ip}</b></div>
       <div><span>Вендор</span><b>${d.vendor}</b></div>
-      <div><span>Модель</span><b>${d.model||"-"}</b></div>
-      <div><span>Uptime</span><b>${d.uptime||"-"}</b></div>
-      <div><span>Температура</span><b>${d.temperature||"-"}</b></div>
-      <div><span>Локация</span><input id="editLocation" value="${d.location||""}" /></div>
-      <div><span>Заметки</span><input id="editNotes" value="${d.notes||""}" /></div>
-    </div>
-    <div class="actions">
+      <div><span>Модель</span><b>${d.model || "-"}</b></div>
+      <div><span>ОС</span><b>${d.os || "N/A"}</b></div>
+      <div><span>Uptime</span><b>${d.uptime || "-"}</b></div>
+      <div><span>Температура</span><b>${d.temperature || "-"}</b></div>
+      <div><span>Последний ребут</span><b>${d.last_reboot || "-"}</b></div>
+      <div><span>Серийный номер</span><b>${d.serial || "-"}</b></div>
+
+      <div><span>Локация</span>
+          <input id="editLocation" value="${d.location || ""}">
+      </div>
+      <div><span>Заметки</span>
+          <input id="editNotes" value="${d.notes || ""}">
+      </div>
+  </div>
+
+  <div class="actions" style="margin-top:10px;margin-bottom:25px">
       <button class="btn btn-primary" onclick="saveMeta()">Сохранить</button>
-    </div>
+  </div>
+
+  <hr style="opacity:.2;margin:20px 0">
+
+  <h3>Мониторинг</h3>
+  <div class="charts-row">
+      <canvas id="chartCpu"></canvas>
+      <canvas id="chartMem"></canvas>
+  </div>
+  <div class="charts-row">
+    <canvas id="chartTemp"></canvas>
+    <canvas id="chartTraffic"></canvas>
+</div>
+
+  <hr style="opacity:.2;margin:20px 0">
+
+  <h3>Сводка интерфейсов</h3>
+  <table class="table">
+      <thead>
+          <tr><th>Интерфейс</th><th>IP</th><th>Статус</th><th>Трафик</th></tr>
+      </thead>
+      <tbody>
+      ${
+        (d.interfaces || []).slice(0,5).map(iface => `
+          <tr>
+              <td>${iface.name}</td>
+              <td>${iface.ip || "-"}</td>
+              <td>${iface.status === "up" ? "<span style='color:#4dffa3'>UP</span>" : "<span style='color:#ff6b6b'>DOWN</span>"}</td>
+              <td>${iface.traffic || "-"}</td>
+          </tr>
+        `).join("")
+      }
+      </tbody>
+  </table>
+
+  <hr style="opacity:.2;margin:20px 0">
+
+  <h3>Последние логи</h3>
+  <ul>
+    ${
+      (d.logs || []).slice(0,5).map(l => 
+        `<li style="opacity:.7;margin-bottom:4px">${l}</li>`
+      ).join("")
+    }
+  </ul>
+
+    <hr style="opacity:.2;margin:20px 0">
+
+  <h3>Соседи (LLDP)</h3>
+  <div id="lldpMap" class="lldp-map"></div>
+
+  <hr style="opacity:.2;margin:20px 0">
+
+  <h3>Диагностика</h3>
+  <div class="actions">
+      <button class="btn btn-primary" onclick="runPing('${d.management_ip}')">Ping</button>
+      <button class="btn btn-primary" onclick="runTrace('${d.management_ip}','${d.hostname}')">Traceroute</button>
+  </div>
+
+  <pre id="diagOutput" style="background:#0c132e;padding:12px;border-radius:12px;margin-top:12px;display:none"></pre>
   `;
+
+  setTimeout(()=>initCharts(),50);
 }
 
-function renderInterfaces(ifaces){
-  const el = document.getElementById("interfaces");
-  el.innerHTML = "";
-  const table = document.createElement("table");
-  table.className = "table";
-  table.innerHTML = `<thead><tr>
-    <th>Имя</th><th>IP/Mask</th><th>VLAN</th><th>Скорость</th><th>Описание</th><th>Админ</th>
-  </tr></thead>`;
-  const tbody = document.createElement("tbody");
-  for (const it of ifaces){
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td contenteditable="true" data-key="name">${it.name||""}</td>
-      <td contenteditable="true" data-key="ip">${it.ip||""}</td>
-      <td contenteditable="true" data-key="vlan">${it.vlan||""}</td>
-      <td contenteditable="true" data-key="speed">${it.speed||""}</td>
-      <td contenteditable="true" data-key="desc">${it.desc||""}</td>
-      <td>
-        <select data-key="admin_status">
-          <option ${it.admin_status==="up"?"selected":""} value="up">up</option>
-          <option ${it.admin_status==="down"?"selected":""} value="down">down</option>
-        </select>
-      </td>
+function renderLLDP(neigh){
+    const box = document.getElementById("lldpMap");
+
+    // Если нет LLDP данных
+    if (!neigh || neigh.length === 0){
+        box.innerHTML = `<p class="muted">Нет LLDP соседей</p>`;
+        return;
+    }
+
+    // Приводим твою структуру к рабочей
+    const norm = neigh.map(n => ({
+        hostname: n.hostname || n.neighbor_id || "Неизвестно",
+        vendor: n.vendor || "-",
+        model: n.model || "-",
+        local_port: n.local_port || n.local_iface || "—",
+        remote_port: n.remote_port || n.neighbor_iface || "—",
+        type: n.type || "switch"
+    }));
+
+    box.innerHTML = `
+        <div class="lldp-grid">
+            ${norm.map(n => `
+                <div class="lldp-card">
+                    <div class="lldp-title">
+                        <span class="dot ${n.type}"></span> ${n.hostname}
+                    </div>
+
+                    <div class="lldp-row"><span>Вендор:</span> ${n.vendor}</div>
+                    <div class="lldp-row"><span>Модель:</span> ${n.model}</div>
+
+                    <div class="lldp-row"><span>Локальный порт:</span> ${n.local_port}</div>
+                    <div class="lldp-row"><span>Удалённый порт:</span> ${n.remote_port}</div>
+
+                    <div class="lldp-link-line"></div>
+                </div>
+            `).join("")}
+        </div>
     `;
-    tbody.appendChild(tr);
-  }
-  table.appendChild(tbody);
-  el.appendChild(table);
-  document.getElementById("saveInterfaces").onclick = async () => {
-    const updated = [...tbody.querySelectorAll("tr")].map(tr => {
-      const obj = {};
-      tr.querySelectorAll("[contenteditable], select").forEach(cell => {
-        const key = cell.dataset.key;
-        obj[key] = cell.tagName === "SELECT" ? cell.value : cell.innerText.trim();
-      });
-      return obj;
-    });
-    const res = await fetch(`/api/device/${DEVICE_ID}/interfaces`,{
-      method:"PUT",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({interfaces: updated})
-    });
-    const data = await res.json();
-    if (data.ok) alert("Интерфейсы сохранены");
-    else alert(data.error || "Ошибка");
-  };
 }
 
-function renderRouting(routes){
-  const el = document.getElementById("routing");
-  const table = document.createElement("table");
-  table.className = "table";
-  table.innerHTML = `<thead><tr><th>Сеть</th><th>Next Hop</th><th>Интерфейс</th><th>Метрика</th><th>Протокол</th></tr></thead>`;
-  const tbody = document.createElement("tbody");
-  for (const r of routes){
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${r.prefix}</td><td>${r.nexthop||"-"}</td><td>${r.iface||"-"}</td><td>${r.metric||"-"}</td><td>${r.proto||"-"}</td>`;
-    tbody.appendChild(tr);
-  }
-  table.appendChild(tbody);
-  el.innerHTML = "";
-  el.appendChild(table);
+
+
+function initCharts(){
+  makeChart("chartCpu", "CPU %", [23,25,33,50,44,41,39]);
+  makeChart("chartMem", "Memory %", [55,56,58,61,62,59,57]);
+  makeChart("chartTemp", "Температура °C", [47,48,49,47,52,50,51], "#ffb36b");
+  makeChart("chartTraffic", "Трафик Mbps", [10,14,18,23,20,30,27], "#3bf59f");
 }
 
-function renderVlans(vlans){
-  const el = document.getElementById("vlans");
-  const table = document.createElement("table");
-  table.className = "table";
-  table.innerHTML = `<thead><tr><th>VLAN ID</th><th>Имя</th><th>Порты</th><th>Тип</th></tr></thead>`;
-  const tbody = document.createElement("tbody");
-  for (const v of vlans){
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td contenteditable="true" data-key="id">${v.id}</td>
-      <td contenteditable="true" data-key="name">${v.name||""}</td>
-      <td contenteditable="true" data-key="ports">${(v.ports||[]).join(", ")}</td>
-      <td>
-        <select data-key="type">
-          <option ${v.type==="access"?"selected":""} value="access">access</option>
-          <option ${v.type==="trunk"?"selected":""} value="trunk">trunk</option>
-        </select>
-      </td>`;
-    tbody.appendChild(tr);
-  }
-  table.appendChild(tbody);
-  el.innerHTML = "";
-  el.appendChild(table);
-  document.getElementById("saveVlans").onclick = async () => {
-    const updated = [...tbody.querySelectorAll("tr")].map(tr => {
-      const obj = {};
-      tr.querySelectorAll("[contenteditable], select").forEach(cell => {
-        const key = cell.dataset.key;
-        let val = cell.tagName === "SELECT" ? cell.value : cell.innerText.trim();
-        if (key==="id") val = Number(val);
-        if (key==="ports") val = val.split(",").map(s=>s.trim()).filter(Boolean);
-        obj[key] = val;
-      });
-      return obj;
-    });
-    const res = await fetch(`/api/device/${DEVICE_ID}/vlans`,{
-      method:"PUT",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({vlans: updated})
-    });
-    const data = await res.json();
-    if (data.ok) alert("VLAN сохранены");
-    else alert(data.error || "Ошибка");
-  };
+function makeChart(id, label, data, color="#4f6bff"){
+  const ctx = document.getElementById(id).getContext("2d");
+  ctx.canvas.width = 400;
+  ctx.canvas.height = 250;
+  new Chart(document.getElementById(id), {
+      type: "line",
+      data: {
+          labels: [...Array(data.length).keys()],
+          datasets: [{
+              label,
+              data,
+              borderColor: color,
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.35
+          }]
+      },
+      options: {
+          plugins: { legend: { labels: { color:"#9aa4c7" }}},
+          scales: {
+              x: { ticks:{color:"#7d89b5"} },
+              y: { ticks:{color:"#7d89b5"} }
+          }
+      }
+  });
 }
+
+function runPing(ip){
+  const out = document.getElementById("diagOutput");
+  out.style.display = "block";
+  out.textContent = `Pinging ${ip}...
+
+Reply from ${ip}: time=2 ms
+Reply from ${ip}: time=3 ms
+Reply from ${ip}: time=1 ms
+
+Ping complete.`;
+}
+
+function runTrace(ip,host){
+  const out = document.getElementById("diagOutput");
+  out.style.display = "block";
+  out.textContent = `Traceroute to ${ip}:
+
+1  core-r1        10.0.0.1
+2  dist-sw2       10.0.1.2
+3  ${host}        ${ip}
+
+Done.`;
+}
+
+
+let IFACE_EDIT_MODE = false; // режим просмотра по умолчанию
+let IFACE_CACHE = [];        // оригинальные данные
+
+function renderInterfaces(ifaces) {
+    IFACE_CACHE = JSON.parse(JSON.stringify(ifaces)); // сохраняем оригинал
+    const el = document.getElementById("interfaces");
+
+    function getIcon(iface) {
+        const n = iface.name.toLowerCase();
+        if (n.startsWith("te") || n.startsWith("xe") || n.startsWith("et")) return "🔷";
+        if (n.startsWith("gi") || n.startsWith("fa") || n.startsWith("e")) return "🔌";
+        if (n.startsWith("lo") || n.startsWith("vl")) return "🌐";
+        return "🔗";
+    }
+
+    function renderRow(it) {
+        // режим ПРОСМОТРА
+        if (!IFACE_EDIT_MODE) {
+            return `
+            <tr>
+                <td>${getIcon(it)} ${it.name}</td>
+                <td>${it.ip || "-"}</td>
+                <td>${it.vlan || "-"}</td>
+                <td>${it.speed || "-"}</td>
+                <td>${it.status==="up" ? "<span class='iface-status up'>UP</span>":"<span class='iface-status down'>DOWN</span>"}</td>
+                <td>${it.errors ?? 0}</td>
+                <td>${it.crc ?? 0}</td>
+                <td>${it.traffic || "—"}</td>
+                <td>—</td>
+                <td>${it.admin_status}</td>
+            </tr>
+            `;
+        }
+
+        // режим РЕДАКТИРОВАНИЯ
+        return `
+<tr class="${it.status === 'down' ? 'iface-down-row' : ''}">  
+            <td>${getIcon(it)} ${it.name}</td>
+
+            <td><input class="iface-edit" data-key="ip" value="${it.ip||""}"></td>
+            <td><input class="iface-edit small" data-key="vlan" value="${it.vlan||""}"></td>
+            <td><input class="iface-edit small" data-key="speed" value="${it.speed||""}"></td>
+
+            <td>
+                <select class="iface-edit" data-key="status">
+                    <option value="up"   ${it.status==="up"?"selected":""}>UP</option>
+                    <option value="down" ${it.status==="down"?"selected":""}>DOWN</option>
+                </select>
+            </td>
+
+            <td class="${(it.errors > 0 || it.crc > 0) ? 'iface-errors-bad' : 'iface-errors-ok'}">${it.errors ?? 0}</td>
+            <td class="${(it.errors > 0 || it.crc > 0) ? 'iface-errors-bad' : 'iface-errors-ok'}">${it.crc ?? 0}</td>
+
+            <td>${it.traffic || "—"}</td>
+            <td>—</td>
+
+            <td>
+                <select class="iface-edit" data-key="admin_status">
+                    <option value="up"   ${it.admin_status==="up"?"selected":""}>up</option>
+                    <option value="down" ${it.admin_status==="down"?"selected":""}>down</option>
+                </select>
+            </td>
+        </tr>
+        `;
+    }
+
+    let html = `
+    <table class="table">
+        <thead>
+<tr>
+    <th onclick="sortBy('name')" style="cursor:pointer">Интерфейс</th>
+    <th onclick="sortBy('ip')" style="cursor:pointer">IP</th>
+    <th onclick="sortBy('vlan')" style="cursor:pointer">VLAN</th>
+    <th onclick="sortBy('speed')" style="cursor:pointer">Скорость</th>
+    <th onclick="sortBy('status')" style="cursor:pointer">Статус</th>
+    <th>Ошибки</th>
+    <th>CRC</th>
+    <th>Трафик</th>
+    <th>График</th>
+    <th>Админ</th>
+</tr>
+</thead>
+        <tbody>
+            ${ifaces.map(renderRow).join("")}
+        </tbody>
+    </table>
+    `;
+
+    el.innerHTML = html;
+}
+
+// Кнопка "Редактировать"
+document.getElementById("editInterfacesBtn").onclick = () => {
+    IFACE_EDIT_MODE = true;
+    renderInterfaces(IFACE_CACHE);
+
+    document.getElementById("saveInterfaces").style.display = "inline-block";
+    document.getElementById("cancelEdit").style.display = "inline-block";
+    document.getElementById("editInterfacesBtn").style.display = "none";
+};
+
+// Кнопка "Отмена"
+document.getElementById("cancelEdit").onclick = () => {
+    IFACE_EDIT_MODE = false;
+    renderInterfaces(IFACE_CACHE);
+
+    document.getElementById("saveInterfaces").style.display = "none";
+    document.getElementById("cancelEdit").style.display = "none";
+    document.getElementById("editInterfacesBtn").style.display = "inline-block";
+};
+
+// Кнопка "Сохранить"
+document.getElementById("saveInterfaces").onclick = async () => {
+    const rows = [...document.querySelectorAll("#interfaces tbody tr")];
+    const updated = rows.map(row => {
+        const name = row.dataset.name;
+        const item = IFACE_CACHE.find(x => x.name === name);
+
+        row.querySelectorAll(".iface-edit").forEach(inp => {
+            item[inp.dataset.key] = inp.value;
+        });
+
+        return item;
+    });
+
+    const res = await fetch(`/api/device/${DEVICE_ID}/interfaces`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ interfaces: updated })
+    });
+
+    const data = await res.json();
+
+    if (data.ok) {
+        alert("Интерфейсы сохранены!");
+        IFACE_EDIT_MODE = false;
+        renderInterfaces(updated);
+    } else {
+        alert("Ошибка сохранения");
+    }
+
+    document.getElementById("saveInterfaces").style.display = "none";
+    document.getElementById("cancelEdit").style.display = "none";
+    document.getElementById("editInterfacesBtn").style.display = "inline-block";
+};
+
+
+function renderRouting(routes) {
+    const el = document.getElementById("routing");
+    el.innerHTML = "";
+
+    // группировка по протоколам
+    const groups = {
+        connected: [],
+        static: [],
+        ospf: [],
+        bgp: [],
+        other: []
+    };
+
+    routes.forEach(r => {
+        const proto = (r.proto || "").toLowerCase();
+        if (groups[proto]) groups[proto].push(r);
+        else groups.other.push(r);
+    });
+
+    // рендер
+    for (const proto in groups) {
+        if (groups[proto].length === 0) continue;
+
+        const block = document.createElement("div");
+        block.className = "route-group";
+
+        const title = proto.toUpperCase();
+        const icon = {
+            connected: "🟢",
+            static: "🟦",
+            ospf: "🟡",
+            bgp: "🔴",
+            other: "⚪"
+        }[proto];
+
+        block.innerHTML = `
+        <h3 class="route-title">${icon} ${title}</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Сеть</th>
+                    <th>Next Hop</th>
+                    <th>Интерфейс</th>
+                    <th>Метрика</th>
+                    <th>Протокол</th>
+                    <th>Операции</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${groups[proto].map(r => `
+                    <tr>
+                        <td>${r.prefix}</td>
+                        <td>${r.nexthop || "-"}</td>
+                        <td>${r.iface || "-"}</td>
+                        <td>${r.metric || "-"}</td>
+                        <td>${r.proto}</td>
+                        <td>
+                            <button class="btn btn-ghost small" onclick="traceRoute('${r.prefix}')">Traceroute</button>
+                            ${r.proto === "static" ? `
+                                <button class="btn btn-primary small" onclick="editRoute('${r.prefix}')">Edit</button>
+                            ` : ""}
+                        </td>
+                    </tr>
+                `).join("")}
+            </tbody>
+        </table>
+        `;
+
+        el.appendChild(block);
+    }
+}
+
+let VLAN_EDIT_MODE = false;
+let VLAN_CACHE = [];
+
+// =======================
+//   РЕНДЕР VLAN
+// =======================
+function renderVlans(vlans) {
+    VLAN_CACHE = JSON.parse(JSON.stringify(vlans)); // сохраняем копию
+    const el = document.getElementById("vlans");
+
+    if (!VLAN_EDIT_MODE) {
+        // ===== ПРОСМОТР =====
+        el.innerHTML = `
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Имя</th>
+                        <th>Тип</th>
+                        <th>Порты</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${vlans.map(v => `
+                        <tr>
+                            <td>${v.id}</td>
+                            <td>${v.name}</td>
+                            <td>${v.type}</td>
+                            <td>${(v.ports || []).join(", ")}</td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        `;
+        return;
+    }
+
+    // ===== РЕДАКТИРОВАНИЕ =====
+    el.innerHTML = `
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Имя</th>
+                    <th>Тип</th>
+                    <th>Порты</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                ${vlans.map(v => `
+                    <tr data-id="${v.id}">
+                        <td><input class="vlan-edit small" data-key="id" value="${v.id}"></td>
+                        <td><input class="vlan-edit" data-key="name" value="${v.name}"></td>
+                        <td>
+                            <select class="vlan-edit" data-key="type">
+                                <option value="access" ${v.type==="access"?"selected":""}>access</option>
+                                <option value="trunk" ${v.type==="trunk"?"selected":""}>trunk</option>
+                            </select>
+                        </td>
+                        <td><input class="vlan-edit" data-key="ports" value="${(v.ports||[]).join(", ")}"></td>
+                        <td>
+                            <button class="btn btn-ghost small" onclick="deleteVlan('${v.id}')">🗑</button>
+                        </td>
+                    </tr>
+                `).join("")}
+            </tbody>
+        </table>
+    `;
+}
+
+// =======================
+//   ДОБАВИТЬ VLAN
+// =======================
+document.getElementById("addVlanBtn").onclick = () => {
+    VLAN_CACHE.push({
+        id: "",
+        name: "",
+        type: "access",
+        ports: []
+    });
+    renderVlans(VLAN_CACHE);
+};
+
+// =======================
+//   УДАЛИТЬ VLAN
+// =======================
+function deleteVlan(id) {
+    VLAN_CACHE = VLAN_CACHE.filter(v => String(v.id) !== String(id));
+    renderVlans(VLAN_CACHE);
+}
+
+
+// =======================
+//   КНОПКА — РЕДАКТИРОВАТЬ
+// =======================
+document.getElementById("editVlansBtn").onclick = () => {
+    VLAN_EDIT_MODE = true;
+    renderVlans(VLAN_CACHE);
+
+    document.getElementById("editVlansBtn").style.display = "none";
+    document.getElementById("addVlanBtn").style.display = "inline-block";
+    document.getElementById("saveVlansBtn").style.display = "inline-block";
+    document.getElementById("cancelVlansBtn").style.display = "inline-block";
+};
+
+
+// =======================
+//   КНОПКА — ОТМЕНА
+// =======================
+document.getElementById("cancelVlansBtn").onclick = () => {
+    VLAN_EDIT_MODE = false;
+    renderVlans(VLAN_CACHE);
+
+    document.getElementById("editVlansBtn").style.display = "inline-block";
+    document.getElementById("addVlanBtn").style.display = "none";
+    document.getElementById("saveVlansBtn").style.display = "none";
+    document.getElementById("cancelVlansBtn").style.display = "none";
+};
+
+
+// =======================
+//   КНОПКА — СОХРАНИТЬ
+// =======================
+document.getElementById("saveVlansBtn").onclick = async () => {
+    const rows = [...document.querySelectorAll("#vlans tbody tr")];
+
+    const updated = rows.map(row => {
+        let obj = {};
+        row.querySelectorAll(".vlan-edit").forEach(inp => {
+            let k = inp.dataset.key;
+            let val = inp.value.trim();
+
+            if (k === "ports") {
+                obj[k] = val ? val.split(",").map(s => s.trim()) : [];
+            } else if (k === "id") {
+                obj[k] = parseInt(val);
+            } else {
+                obj[k] = val;
+            }
+        });
+        return obj;
+    });
+
+    const res = await fetch(`/api/device/${DEVICE_ID}/vlans`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({vlans: updated})
+    });
+
+    const data = await res.json();
+
+    if (data.ok) {
+        alert("VLAN сохранены!");
+        VLAN_EDIT_MODE = false;
+        renderVlans(updated);
+    } else {
+        alert("Ошибка сохранения");
+    }
+
+    document.getElementById("editVlansBtn").style.display = "inline-block";
+    document.getElementById("addVlanBtn").style.display = "none";
+    document.getElementById("saveVlansBtn").style.display = "none";
+    document.getElementById("cancelVlansBtn").style.display = "none";
+};
+
+
+function renderVlans(vlans) {
+    const el = document.getElementById("vlans");
+
+    if (!vlans || vlans.length === 0) {
+        el.innerHTML = `<p class="muted">Нет VLAN на устройстве</p>`;
+        return;
+    }
+
+    el.innerHTML = `
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Имя</th>
+                    <th>Тип</th>
+                    <th>Порты</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${vlans.map(v => `
+                    <tr>
+                        <td>${v.id}</td>
+                        <td>${v.name}</td>
+                        <td>${v.type}</td>
+                        <td>${Array.isArray(v.ports) ? v.ports.join(", ") : "-"}</td>
+                    </tr>
+                `).join("")}
+            </tbody>
+        </table>
+    `;
+}
+
+
+// мок-трассировка
+function traceRoute(prefix) {
+    const out = document.getElementById("diagOutput") || createDiagBox();
+    out.style.display = "block";
+
+    out.textContent = `
+Трассировка до ${prefix}...
+
+1   Access-1      10.0.1.1
+2   Dist-1        10.0.0.2
+3   Core-1        10.0.0.1
+4   ${prefix}
+
+Done.
+    `;
+}
+
+// окно для вывода диагностики, если нет
+function createDiagBox(){
+    const box = document.createElement("pre");
+    box.id = "diagOutput";
+    box.style.cssText = "background:#0c132e;padding:12px;border-radius:12px;margin-top:12px;";
+    document.getElementById("routing").appendChild(box);
+    return box;
+}
+
+// редактирование статических маршрутов
+function editRoute(prefix){
+    alert("Редактирование static route: " + prefix + "\n(можно добавить форму)");
+}
+
 
 function renderArp(entries){
   const el = document.getElementById("arp");
@@ -270,6 +827,29 @@ document.getElementById("logoutBtn")?.addEventListener("click", async ()=>{
   await fetch("/api/logout",{method:"POST"});
   window.location="/login";
 });
+
+document.getElementById("ifaceSearch").oninput = (e) => {
+    const q = e.target.value.toLowerCase();
+
+    const filtered = IFACE_CACHE.filter(i =>
+        i.name.toLowerCase().includes(q) ||
+        (i.ip ?? "").toLowerCase().includes(q) ||
+        (i.vlan ?? "").toString().includes(q)
+    );
+
+    renderInterfaces(filtered);
+};
+
+document.getElementById("applyBulkVlan").onclick = () => {
+    const val = document.getElementById("bulkVlan").value;
+    if (!val) return alert("Выберите VLAN");
+
+    IFACE_CACHE.forEach(i => {
+        i.vlan = val;
+    });
+
+    renderInterfaces(IFACE_CACHE);
+};
 
 loadDevice();
 </script>

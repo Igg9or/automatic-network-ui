@@ -121,3 +121,214 @@ input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #2
 }
 .tooltip .ttl { font-weight: 700; margin-bottom: 4px; }
 .tooltip .row { display: grid; grid-template-columns: 80px 1fr; gap: 6px; color: #9aa4c7; }
+
+.device-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.charts-row canvas {
+    width: 100% !important;
+    height: 250px !important;
+    background: #0c132e;
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.lldp-map {
+    margin-top: 15px;
+}
+
+.lldp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.lldp-card {
+    background: #0c132e;
+    border: 1px solid #1c274d;
+    border-radius: 12px;
+    padding: 14px;
+    position: relative;
+    box-shadow: 0 8px 20px rgba(0,0,0,.25);
+}
+
+.lldp-title {
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lldp-row {
+    opacity: .8;
+    margin-bottom: 3px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+}
+
+.lldp-link-line {
+    width: 80%;
+    height: 2px;
+    background: #3154ff40;
+    margin: 10px auto 0 auto;
+    border-radius: 2px;
+}
+
+.dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dot.router { background:#6ecbff; }
+.dot.switch { background:#86ffb6; }
+.dot.host { background:#ffd37a; }
+
+.btn {
+    padding: 10px 18px;
+    border-radius: 12px;
+    border: 1px solid #3a4a7a;
+    background: linear-gradient(180deg, #1e2a5c, #161e3f);
+    color: #e7ecff;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+
+.btn:hover {
+    background: linear-gradient(180deg, #2b3a7a, #1d2650);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+
+.btn-primary {
+    background: linear-gradient(180deg, #4a6aff, #3454e0);
+    border-color: #5f76ff;
+    color: white;
+    box-shadow: 0 4px 18px rgba(70,102,255,0.35);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(180deg, #6685ff, #3f5ef0);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(90,120,255,0.45);
+}
+
+.btn-ghost {
+    background: rgba(255,255,255,0.04);
+    border-color: #374169;
+}
+
+.btn-ghost:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: #4a5a86;
+}
+.iface-status {
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.iface-status.up {
+    background: rgba(0,255,120,0.18);
+    color: #7bffcb;
+}
+.iface-status.down {
+    background: rgba(255,80,80,0.18);
+    color: #ff8a8a;
+}
+
+/* Контейнер группы */
+.iface-group {
+    margin-top: 25px;
+    background: rgba(255,255,255,0.02);
+    padding: 15px;
+    border-radius: 12px;
+}
+
+/* Трафик мини-графиков */
+.sparkline {
+    width: 120px !important;
+    height: 35px !important;
+}
+.iface-group {
+    background:#0f152f;
+    padding:18px;
+    border-radius:14px;
+    margin-bottom:22px;
+}
+
+.iface-group h3 {
+    margin-bottom:15px;
+    opacity:.8;
+}
+
+.iface-row {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:1px solid rgba(255,255,255,0.05);
+    padding:10px 0;
+}
+
+.iface-col {
+    width: 150px;
+}
+
+.iface-icon {
+    font-size:20px;
+    margin-right:10px;
+}
+.small {
+    opacity:.6;
+    font-size:12px;
+}
+
+.route-group {
+    background:#101633;
+    padding:20px;
+    border-radius:14px;
+    margin-bottom:25px;
+    box-shadow:0 8px 20px rgba(0,0,0,.2);
+}
+
+.route-title {
+    margin-bottom:15px;
+    font-size:18px;
+    opacity:.85;
+}
+
+.btn.small {
+    padding:4px 8px;
+    font-size:12px;
+}
+/* Подсветка ошибок */
+.iface-errors-ok {
+    color: #7bffcb;
+    font-weight: 600;
+}
+
+.iface-errors-bad {
+    color: #ff6b6b;
+    font-weight: 600;
+}
+
+/* Подсветка DOWN интерфейсов */
+.iface-down-row {
+    background: rgba(255,60,60,0.08) !important;
+    border-left: 3px solid #ff6b6b !important;
+}
